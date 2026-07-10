@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSimulate = document.getElementById('btnSimulate');
     const btnStorm = document.getElementById('btnStorm');
     const btnReset = document.getElementById('btnReset');
+    const stormAudio = document.getElementById('stormAudio');
 
     // Datos de clima real respaldados (fallback o recuperados)
     let realWeatherData = {
@@ -233,6 +234,49 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Controladores de Audio de la Tormenta ---
+    let audioFadeInterval = null;
+
+    function playStormSound() {
+        if (!stormAudio) return;
+        
+        clearInterval(audioFadeInterval);
+        stormAudio.volume = 0;
+        
+        // Intentar reproducir el bucle
+        stormAudio.play().then(() => {
+            let vol = 0;
+            audioFadeInterval = setInterval(() => {
+                vol += 0.05;
+                if (vol >= 0.5) {
+                    stormAudio.volume = 0.5;
+                    clearInterval(audioFadeInterval);
+                } else {
+                    stormAudio.volume = vol;
+                }
+            }, 100);
+        }).catch(err => {
+            console.warn("La reproducción de sonido de tormenta falló o fue bloqueada:", err);
+        });
+    }
+
+    function stopStormSound() {
+        if (!stormAudio || stormAudio.paused) return;
+
+        clearInterval(audioFadeInterval);
+        let vol = stormAudio.volume;
+        audioFadeInterval = setInterval(() => {
+            vol -= 0.05;
+            if (vol <= 0.01) {
+                stormAudio.volume = 0;
+                stormAudio.pause();
+                clearInterval(audioFadeInterval);
+            } else {
+                stormAudio.volume = vol;
+            }
+        }, 100);
+    }
+
     // --- Aplicar un Estado del Clima a la UI ---
     function applyWeatherState(stateData) {
         if (tempNumberEl) tempNumberEl.textContent = stateData.temp;
@@ -245,10 +289,17 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.className = '';
         document.body.classList.add(stateData.class || 'weather-normal');
 
+        // Controlar Lluvia en Canvas y Audio de Tormenta
         if (stateData.class === 'weather-rainy' || stateData.class === 'weather-stormy') {
             startRainEffect(stateData.class);
+            if (stateData.class === 'weather-stormy') {
+                playStormSound();
+            } else {
+                stopStormSound();
+            }
         } else {
             stopRainEffect();
+            stopStormSound();
         }
 
         if (weatherIconWrapper) {
@@ -290,6 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
         applyWeatherState(simulatedData);
     }
 
+    // ...
     function triggerStormSimulation() {
         isSimulated = true;
 
