@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clima Hermosillo - Sol y Flores</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="weather-normal">
+    <div class="app-container">
+        <!-- Panel Principal (Glassmorphism) -->
+        <main class="weather-card">
+            <header class="card-header">
+                <div class="location-info">
+                    <span class="badge"><i data-lucide="map-pin"></i> Hermosillo, Sonora</span>
+                    <h1 class="city-name">Hermosillo</h1>
+                </div>
+                <div class="status-indicator" id="statusIndicator">
+                    <span class="dot"></span> Clima Real
+                </div>
+            </header>
+
+            <!-- Bloque de Temperatura Principal -->
+            <section class="temp-section">
+                <div class="temp-display">
+                    <span class="temp-number" id="tempNumber">--</span><span class="temp-unit">°C</span>
+                </div>
+                <div class="weather-desc-container">
+                    <div class="weather-icon-wrapper" id="weatherIconWrapper">
+                        <i data-lucide="cloud-sun" class="main-weather-icon"></i>
+                    </div>
+                    <span class="weather-desc" id="weatherDesc">Cargando clima...</span>
+                </div>
+            </section>
+
+            <!-- Estadísticas del Clima -->
+            <section class="weather-stats">
+                <div class="stat-item">
+                    <div class="stat-icon-wrapper humidity">
+                        <i data-lucide="droplets"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Humedad</span>
+                        <span class="stat-value" id="humidityVal">--%</span>
+                    </div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon-wrapper wind">
+                        <i data-lucide="wind"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Viento</span>
+                        <span class="stat-value" id="windVal">-- km/h</span>
+                    </div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-icon-wrapper thermal">
+                        <i data-lucide="thermometer"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Sensación</span>
+                        <span class="stat-value" id="feelsLikeVal">--°C</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Controles Interactivos -->
+            <section class="controls-section">
+                <div class="simulation-buttons">
+                    <button id="btnSimulate" class="btn btn-primary">
+                        <i data-lucide="sun"></i> Corregir a Soleado
+                    </button>
+                    <button id="btnStorm" class="btn btn-danger">
+                        <i data-lucide="cloud-lightning"></i> Simular Tormenta
+                    </button>
+                </div>
+                <button id="btnReset" class="btn btn-secondary" disabled>
+                    <i data-lucide="refresh-cw"></i> Restaurar Clima Real
+                </button>
+            </section>
+
+            <footer class="card-footer">
+                <span id="updateTime">Última actualización: --:--</span>
+            </footer>
+        </main>
+
+        <!-- Canvas para lluvia (se activa dinámicamente) -->
+        <canvas id="rainCanvas"></canvas>
+
+        <!-- Paisaje Interactivo Vectorial -->
+        <div class="landscape-container">
+            <svg viewBox="0 0 1000 500" preserveAspectRatio="xMidYMax slice" class="landscape-svg">
+                <!-- Cielo Gradiente definido en CSS -->
+                <rect width="1000" height="500" class="sky-bg" />
+
+                <!-- Sol Radiante -->
+                <g id="sunGroup" class="sun-group">
+                    <!-- Rayos traseros -->
+                    <circle cx="820" cy="120" r="85" class="sun-glow" />
+                    <!-- Sol principal -->
+                    <circle cx="820" cy="120" r="55" class="sun-body" />
+                    <!-- Rayos definidos como líneas -->
+                    <g class="sun-rays">
+                        <line x1="820" y1="40" x2="820" y2="60" />
+                        <line x1="820" y1="180" x2="820" y2="200" />
+                        <line x1="740" y1="120" x2="760" y2="120" />
+                        <line x1="880" y1="120" x2="900" y2="120" />
+                        <line x1="763" y1="63" x2="777" y2="77" />
+                        <line x1="863" y1="163" x2="877" y2="177" />
+                        <line x1="763" y1="177" x2="777" y2="163" />
+                        <line x1="863" y1="77" x2="877" y2="63" />
+                    </g>
+                </g>
+
+                <!-- Nubes Flotantes -->
+                <g id="cloudsGroup">
+                    <!-- Nube 1 (Izquierda) -->
+                    <path class="cloud-path cloud-1" d="M 120 180 a 30 30 0 0 1 30 -20 a 45 45 0 0 1 80 5 a 35 35 0 0 1 30 35 a 20 20 0 0 1 -20 20 l -110 0 a 25 25 0 0 1 -10 -40 z" />
+                    <!-- Nube 2 (Derecha) -->
+                    <path class="cloud-path cloud-2" d="M 720 130 a 25 25 0 0 1 25 -15 a 40 40 0 0 1 70 5 a 30 30 0 0 1 25 30 a 18 18 0 0 1 -18 18 l -92 0 a 20 20 0 0 1 -10 -38 z" />
+                    <!-- Nube 3 (Centro-Fondo) -->
+                    <path class="cloud-path cloud-3" d="M 400 150 a 20 20 0 0 1 20 -10 a 35 35 0 0 1 60 5 a 25 25 0 0 1 20 25 a 15 15 0 0 1 -15 15 l -80 0 a 15 15 0 0 1 -5 -35 z" />
+                </g>
+
+                <!-- Montañas (Colina trasera) -->
+                <path class="mountain mountain-back" d="M -100 500 Q 150 280 450 380 T 1100 500 Z" />
+
+                <!-- Montañas (Colina principal / Montañita verde) -->
+                <path class="mountain mountain-front" d="M -50 500 Q 300 320 650 420 T 1050 500 Z" />
+
+                <!-- Rayo / Relámpago (Simulación Tormenta) -->
+                <path id="lightningBolt" class="lightning-bolt" d="M 450 140 L 430 220 L 475 210 L 440 340 L 490 225 L 455 235 Z" />
+
+                <!-- Flores en la Colina (Ubicaciones seleccionadas para lucir hermosas) -->
+                <!-- Grupo de Flores 1 (Izquierda) -->
+                <g transform="translate(180, 420)">
+                    <g class="flower-system">
+                        <line x1="0" y1="40" x2="0" y2="0" class="flower-stem" />
+                        <circle cx="0" cy="40" r="6" class="flower-root-bg" />
+                        <g class="flower-petals">
+                            <circle cx="-10" cy="0" r="7" />
+                            <circle cx="10" cy="0" r="7" />
+                            <circle cx="0" cy="-10" r="7" />
+                            <circle cx="0" cy="10" r="7" />
+                            <circle cx="0" cy="0" r="5" class="flower-center" />
+                        </g>
+                    </g>
+                </g>
+
+                <!-- Grupo de Flores 2 (Centro-Izquierda) -->
+                <g transform="translate(320, 440)">
+                    <g class="flower-system flower-delay-1">
+                        <line x1="0" y1="40" x2="-2" y2="0" class="flower-stem" />
+                        <g class="flower-petals">
+                            <circle cx="-9" cy="0" r="6" />
+                            <circle cx="9" cy="0" r="6" />
+                            <circle cx="0" cy="-9" r="6" />
+                            <circle cx="0" cy="9" r="6" />
+                            <circle cx="0" cy="0" r="4.5" class="flower-center" />
+                        </g>
+                    </g>
+                </g>
+
+                <!-- Grupo de Flores 3 (Centro-Derecha) -->
+                <g transform="translate(680, 450)">
+                    <g class="flower-system flower-delay-2">
+                        <line x1="0" y1="40" x2="1" y2="0" class="flower-stem" />
+                        <g class="flower-petals">
+                            <circle cx="-10" cy="0" r="7.5" />
+                            <circle cx="10" cy="0" r="7.5" />
+                            <circle cx="0" cy="-10" r="7.5" />
+                            <circle cx="0" cy="10" r="7.5" />
+                            <circle cx="0" cy="0" r="5" class="flower-center" />
+                        </g>
+                    </g>
+                </g>
+
+                <!-- Grupo de Flores 4 (Derecha) -->
+                <g transform="translate(850, 430)">
+                    <g class="flower-system flower-delay-3">
+                        <line x1="0" y1="40" x2="0" y2="0" class="flower-stem" />
+                        <g class="flower-petals">
+                            <circle cx="-8" cy="0" r="6" />
+                            <circle cx="8" cy="0" r="6" />
+                            <circle cx="0" cy="-8" r="6" />
+                            <circle cx="0" cy="8" r="6" />
+                            <circle cx="0" cy="0" r="4" class="flower-center" />
+                        </g>
+                    </g>
+                </g>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Script de lógica -->
+    <script src="app.js"></script>
+</body>
+</html>
